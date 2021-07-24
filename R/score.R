@@ -29,7 +29,7 @@ scorers <- c(
 #' @examples
 
 #' wilson_score(5, 6, .99)
-wilson_score <- function(pos, n, conf = .95) {
+wilson_score <- function(pos, n, conf = .99) {
   if (n < pos) {
     return(cat("'n' must be equal to or less than pos"))
   }
@@ -50,19 +50,19 @@ wilson_score <- function(pos, n, conf = .95) {
 
 #' Calculate lower bound Bayesian confidence interval
 #'
-#' @param n numeric vector of integer values, corresponding to the number of
-#'   ratings per rating level (e.g. 5 one-star, 4 two-star, 1 three-star)
+#' @param scores numeric vector of integer values, corresponding to the number
+#'   of ratings per rating level (e.g. 5 one-star, 4 two-star, 1 three-star)
 #' @param conf decimal-valued scalar of desired confidence level
 #' @return scalar, calculated lower bound Bayesian confidence interval
 #' @examples
 #' ordinal_score(c(0, 4, 8, 2, 0), .99)
-ordinal_score <- function(n, conf = .95) {
-  K <- length(n)
-  N <- sum(n)
+ordinal_score <- function(scores, conf = .99) {
+  K <- length(scores)
+  N <- sum(scores)
   z <- qnorm(1 - (1 - conf) / 2)
 
-  sum1 <- sum(sapply(seq(n), function(k) (k * (n[k] + 1) / (N + K))))
-  sum2 <- sum(sapply(seq(n), function(k) (k^2 * (n[k] + 1) / (N + K))))
+  sum1 <- sum(sapply(seq(scores), function(k) (k * (scores[k] + 1) / (N + K))))
+  sum2 <- sum(sapply(seq(scores), function(k) (k^2 * (scores[k] + 1) / (N + K))))
 
   score <- sum1 - z * sqrt((sum2 - sum1^2) / (N + K + 1))
 
@@ -87,12 +87,33 @@ main <- function() {
   if(!is.na(match("--help", args))) {
     return(
       cat(
-        "Usage: ordinal_score n1 n2 [n3] ... [conf]",
+        "Usage: score (wilson | ordinal) n1 n2 [n3] ... [--conf]",
+        "\n",
+        "Calculate Wilson scores for binomial count data (e.g. porportion of ",
+        "'upvotes' to 'downvotes'), or Bayesian Approximation scores for ",
+        "ordinal equivalents (e.g. 'true' average ratings for products rated ",
+        "on a 5-point scale).",
+        "\n",
+        "For Wilson scores, only two arguments required: number of postive ",
+        "cases (e.g. total upvotes) and number of total cases (e.g. total ",
+        "upvotes + total downvotes)",
+        "\n",
+        "For Ordinal scores, any number of arguments may be supplied. Each ",
+        "argument will be interpreted as the number of ratings for a given ",
+        "score value in ascending order. For example: \n\nordinal 4 5 6 \n ",
+        "would be interpreted as '4 one-star ratings, 5 two-star ratings, and ",
+        "6 three-star ratings'",
         "\n\n",
-        "Calculate a Bayesian Approximation of an ordinal score. All n[x] ",
-        "values must be integers, corresponding to the number of ratings of ",
-        "[x] value. Can optionally provide [conf] to calculate confidence ",
-        "interval for a specific level. Default confidence interval is .95.",
+        "--conf             Confidence interval for scoring. Must be",
+        "                   decimal-valued. Defaults to .99",
+        "\n\n",
+        "Examples:",
+        "\n",
+        "score wilson 314 341\n",
+        "score ordinal 4 6 35 45 25\n",
+        "score wilson 314 341 --conf=.95",
+        "score ordinal 4 6 35 45 25 --conf=.95",
+
         fill = 80
       )
     )
@@ -104,47 +125,44 @@ main <- function() {
       "First argument must be one of ",
       "",
       scorers,
+      "",
       sep = "\n",
       fill = 80
     )
   )
 
   scorer <- args[1]
-  if (scorer != "wilson" & scorer != "ordinal") {
-    return(eval(err1))
-  }
+  if (scorer != "wilson" & scorer != "ordinal") stop(eval(err1))
 
   # Parse confidence level option, if provided
-  conf_index <- match("--conf", args)
-  if (!is.na(conf_index)) {
-    conf <- tryCatch(
-      as.numeric(args[conf_index + 1]),
-      error = return(cat("Argument for option --conf must be numeric, decimal valued"))
+  conf_index <- grep("--conf=.+", args)
+  if (length(conf_index) != 0) {
+    conf <- as.numeric(
+      grep("[[:digit:]]+",
+           gsub("--conf=", args[conf_index], replacement = ""),
+           value = T)
     )
+    if (length(conf) == 0 | conf >= 1) {
+      stop("Argument for option --conf must be numeric, decimal valued")
+    }
     args <- args[-conf_index]
   } else {
-    conf <- .95
+    conf <- .99
   }
 
   # Catch non-numeric arguments
-  args <- tryCatch(
-    as.numeric(args[-1]),
-    error = function() return(cat("All arguments must be numeric."))
-  )
+  args <- as.numeric(args[-1])
+  if (any(is.na(args))) stop("All arguments must be numeric.")
   n_args <- length(args)
 
   # Catch < 2 arguments
-  if (n_args < 2) {
-    return(cat("Must provide at least two numeric arguments."))
-  }
+  if (n_args < 2) stop("Must provide at least two numeric arguments.")
 
-  # Calculate Wilson score.R
+  # Calculate Wilson score
   if (scorer == "wilson") {
 
     # Catch > 3 arguments
-    if (n_args > 3) {
-      return("Maximum of 3 arguments accepted for Wilson scoring")
-    }
+    if (n_args > 3) stop("Maximum of 3 arguments accepted for Wilson scoring")
 
     # Final parameters
     pos <- ifelse(
@@ -154,7 +172,7 @@ main <- function() {
     )
     n <- args[2]
 
-    # Calculate score.R
+    # Calculate score
     result <- wilson_score(pos, n, conf)
 
   }
@@ -162,18 +180,11 @@ main <- function() {
 
     # Catch non-integer arguments for n arguments < 3
     ints <- sapply(args, function(x) x %% 1 == 0)
-    if (!any(ints)) {
-      return(
-        cat(
-          "All arguments must be integers.",
-          fill = 80
-        )
-      )
-    }
-    n <- args
+    if (!any(ints))  stop("All arguments must be integers.")
+    scores <- args
 
     # Calculate score.R
-    result <- ordinal_score(n, conf)
+    result <- ordinal_score(scores, conf)
   }
 
   cat(result, fill = 80)

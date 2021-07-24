@@ -1,7 +1,7 @@
 # scoreR
 
 A command line utility for calculating the "true" scores for things using 
-_S T A T I S T I C S_.
+___S T A T I S T I C S___.
 
 To give a concrete example, say you're trying to decide between two movies, 
 one where 800 out of 1000 critics gave a positive review and another where 8 out 
