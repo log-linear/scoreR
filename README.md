@@ -25,9 +25,29 @@ this will work on a Windows machine.
 
 ## Usage 
 
+Here, we evaluate a product with 314 positive scores (or upvotes, or likes, 
+etc.) out of 341 total scores.
+
 ```shell
-score wilson 314 341
-score ordinal 4 6 35 45 25
-score wilson 314 341 --conf=.95
-score ordinal 4 6 35 45 25 --conf=.95
+[user@hostname ~] score wilson 314 341
+0.8872512
+```
+
+Similarly, we can evaluate ordinal ratings. Here we evaluate a product with
+4 one-star reviews, 6 two-star reviews, 35 three-star reviews, 45 four-star 
+reviews, and 25 five-star reviews
+
+```shell
+[user@hostname ~] score ordinal 4 6 35 45 25
+3.495104
+```
+
+We can also adjust the [confidence interval](https://en.wikipedia.org/wiki/Confidence_interval)
+for a more or less "accurate" score.
+
+```shell
+[user@hostname ~] score wilson 314 341 --conf=.99
+0.8746312
+[user@hostname ~] score ordinal 4 6 35 45 25 --conf=.99
+3.438576
 ```

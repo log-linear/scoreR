@@ -28,8 +28,8 @@ scorers <- c(
 #' @return scalar, calculated Wilson score.R
 #' @examples
 
-#' wilson_score(5, 6, .99)
-wilson_score <- function(pos, n, conf = .99) {
+#' wilson_score(5, 6, .95)
+wilson_score <- function(pos, n, conf = .95) {
   if (n < pos) {
     return(cat("'n' must be equal to or less than pos"))
   }
@@ -55,8 +55,8 @@ wilson_score <- function(pos, n, conf = .99) {
 #' @param conf decimal-valued scalar of desired confidence level
 #' @return scalar, calculated lower bound Bayesian confidence interval
 #' @examples
-#' ordinal_score(c(0, 4, 8, 2, 0), .99)
-ordinal_score <- function(scores, conf = .99) {
+#' ordinal_score(c(0, 4, 8, 2, 0), .95)
+ordinal_score <- function(scores, conf = .95) {
   K <- length(scores)
   N <- sum(scores)
   z <- qnorm(1 - (1 - conf) / 2)
@@ -105,14 +105,14 @@ main <- function() {
         "6 three-star ratings'",
         "\n\n",
         "--conf             Confidence interval for scoring. Must be",
-        "                   decimal-valued. Defaults to .99",
+        "                   decimal-valued. Defaults to .95",
         "\n\n",
         "Examples:",
         "\n",
         "score wilson 314 341\n",
         "score ordinal 4 6 35 45 25\n",
-        "score wilson 314 341 --conf=.95",
-        "score ordinal 4 6 35 45 25 --conf=.95",
+        "score wilson 314 341 --conf=.99",
+        "score ordinal 4 6 35 45 25 --conf=.99",
 
         fill = 80
       )
@@ -147,7 +147,7 @@ main <- function() {
     }
     args <- args[-conf_index]
   } else {
-    conf <- .99
+    conf <- .95
   }
 
   # Catch non-numeric arguments
