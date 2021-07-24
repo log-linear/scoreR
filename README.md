@@ -5,10 +5,10 @@ ___S T A T I S T I C S___.
 
 To give a concrete example, say you're trying to decide between two movies, 
 one where 800 out of 1000 critics gave a positive review and another where 8 out 
-of 10 were positive. The average scores are exactly the same, but intuitively,
-you probably have more confidence that the first movie is "truly" an 80% 
-compared to the second, simply due to the shear number of reviews available. 
-This tool re-averages such scores using a metric called the
+of 10 were positive. The proportions of positive scores are exactly the same, 
+but intuitively, you probably have more confidence that the first movie is 
+"truly" an 80% compared to the second, simply due to the shear number of reviews 
+available. This tool "re-averages" such scores using a metric called the
 [Wilson Score](https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval),
 which takes into account not just the raw proportions of scores, but the actual
 numbers of scores available. 
