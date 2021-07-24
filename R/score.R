@@ -1,13 +1,14 @@
 #!/usr/bin/env -S Rscript --no-save --no-restore --no-site-file
 
 #===============================================================================
-# Usage: score n1 n2 [n3] ... [conf]
+# Usage: score.R n1 n2 [n3] ... [conf]
 #
-# Calculate a Bayesian Approximation of an ordinal score. All n[x]
+# Calculate a Bayesian Approximation of an ordinal score.R. All n[x]
 # values must be integers, corresponding to the number of ratings of [x]
 # value. Can optionally provide [conf] to calculate confidence interval
 # for a specific level. Default confidence interval is .95.
 #===============================================================================
+library(argparser, quietly = T)
 
 #===============================================================================
 # Scoring functions
@@ -19,18 +20,15 @@ scorers <- c(
   "ordinal"
 )
 
-#'------------------------------------------------------------------------------
-#' wilson_score
-#'
 #' Calculate lower bound binomial confidence interval
 #'
 #' @param pos integer-valued scalar count of successes
 #' @param n integer-valued scalar count of trials
 #' @param conf decimal-valued scalar of desired confidence level
-#' @return scalar, calculated Wilson score
+#' @return scalar, calculated Wilson score.R
 #' @examples
+
 #' wilson_score(5, 6, .99)
-#'------------------------------------------------------------------------------
 wilson_score <- function(pos, n, conf = .95) {
   if (n < pos) {
     return(cat("'n' must be equal to or less than pos"))
@@ -50,9 +48,6 @@ wilson_score <- function(pos, n, conf = .95) {
   return(score)
 }
 
-#'------------------------------------------------------------------------------
-#' @ ordinal_score
-#'
 #' Calculate lower bound Bayesian confidence interval
 #'
 #' @param n numeric vector of integer values, corresponding to the number of
@@ -61,7 +56,6 @@ wilson_score <- function(pos, n, conf = .95) {
 #' @return scalar, calculated lower bound Bayesian confidence interval
 #' @examples
 #' ordinal_score(c(0, 4, 8, 2, 0), .99)
-#'------------------------------------------------------------------------------
 ordinal_score <- function(n, conf = .95) {
   K <- length(n)
   N <- sum(n)
@@ -79,6 +73,7 @@ ordinal_score <- function(n, conf = .95) {
 # Main script
 #===============================================================================
 main <- function() {
+  p <- arg_parser("Calculate Wilson scores and for")
 
   # Get args
   args <- commandArgs(trailingOnly = T)
@@ -126,7 +121,6 @@ main <- function() {
       as.numeric(args[conf_index + 1]),
       error = return(cat("Argument for option --conf must be numeric, decimal valued"))
     )
-    args <- args[-(conf_index + 1)]
     args <- args[-conf_index]
   } else {
     conf <- .95
@@ -144,7 +138,7 @@ main <- function() {
     return(cat("Must provide at least two numeric arguments."))
   }
 
-  # Calculate Wilson score
+  # Calculate Wilson score.R
   if (scorer == "wilson") {
 
     # Catch > 3 arguments
@@ -160,7 +154,7 @@ main <- function() {
     )
     n <- args[2]
 
-    # Calculate score
+    # Calculate score.R
     result <- wilson_score(pos, n, conf)
 
   }
@@ -178,7 +172,7 @@ main <- function() {
     }
     n <- args
 
-    # Calculate score
+    # Calculate score.R
     result <- ordinal_score(n, conf)
   }
 
