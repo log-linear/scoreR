@@ -8,7 +8,6 @@
 # value. Can optionally provide [conf] to calculate confidence interval
 # for a specific level. Default confidence interval is .95.
 #===============================================================================
-library(argparser, quietly = T)
 
 #===============================================================================
 # Scoring functions
@@ -73,7 +72,6 @@ ordinal_score <- function(scores, conf = .95) {
 # Main script
 #===============================================================================
 main <- function() {
-  p <- arg_parser("Calculate Wilson scores and for")
 
   # Get args
   args <- commandArgs(trailingOnly = T)
